@@ -1,7 +1,11 @@
 {
-    "name": "my/backend",
     "require": {
         "mongodb/mongodb": "^1.15",
         "vlucas/phpdotenv": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
     }
 }

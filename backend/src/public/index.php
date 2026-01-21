@@ -27,6 +27,9 @@ if ($uri === '/api/test' && $method === 'GET') {
     exit;
 }
 
+
+//add routes  here
+
 // 404 Handler
 http_response_code(404);
 echo json_encode(['error' => 'Not Found']);
