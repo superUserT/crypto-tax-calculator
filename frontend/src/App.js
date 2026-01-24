@@ -9,6 +9,7 @@ function parseCSV(content) {
     "buyAmount",
     "sellAmount",
     "buyPricePerCoin",
+    "sellPricePerCoin",
     "date"
   ];
 
@@ -40,6 +41,9 @@ function parseCSV(content) {
       tx.sellAmount = parseFloat((tx.sellAmount || 0).toString().replace(/,/g, "")) || 0;
       tx.buyPricePerCoin = parseFloat(
         (tx.buyPricePerCoin || "").toString().replace(/[^0-9.-]+/g, "")
+      ) || 0;
+      tx.sellPricePerCoin = parseFloat(
+        (tx.sellPricePerCoin || "").toString().replace(/[^0-9.-]+/g, "")
       ) || 0;
 
       // Normalize type to uppercase
@@ -189,7 +193,7 @@ function FinalSummary({ processedTransactions, finalBalances }) {
               <td>{data.totalAmount}</td>
               <td>
                 <ul>
-                  {data.lots.map((lot, j) => (
+                  {(Array.isArray(data.lots) ? data.lots : []).map((lot, j) => (
                     <li key={j}>
                       {lot.amount} @ {lot.pricePerCoin} (Date: {lot.date})
                     </li>

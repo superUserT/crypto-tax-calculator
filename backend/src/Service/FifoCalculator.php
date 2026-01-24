@@ -1,7 +1,6 @@
 <?php
 namespace App\Service;
 
-// Simple FIFO calculator class 
 class FifoCalculator
 {
     private $balances = [];
@@ -11,7 +10,7 @@ class FifoCalculator
         return $this->balances;
     }
 
-    private function addLot(string $coin, float $amount, float $pricePerCoin, string $date)
+    private function addLot(string $coin, float $amount, float $price, string $date)
     {
         if (!isset($this->balances[$coin])) {
             $this->balances[$coin] = [
@@ -22,20 +21,20 @@ class FifoCalculator
 
         $this->balances[$coin]['lots'][] = [
             'amount' => $amount,
-            'pricePerCoin' => $pricePerCoin,
+            'pricePerCoin' => $price,
             'date' => $date
         ];
 
         $this->balances[$coin]['totalAmount'] += $amount;
     }
 
-    private function sell(string $coin, float $sellAmount, float $pricePerCoin, string $date): array
+    private function fifoSell(string $coin, float $amount): array
     {
         if (!isset($this->balances[$coin])) {
-            throw new \Exception("No balance for coin $coin");
+            throw new \Exception("No balance for $coin");
         }
 
-        $remaining = $sellAmount;
+        $remaining = $amount;
         $cost = 0;
         $consumedLots = [];
 
@@ -55,73 +54,91 @@ class FifoCalculator
             $remaining -= $take;
         }
 
-        // Remove fully consumed lots
-        $this->balances[$coin]['lots'] = array_filter(
-            $this->balances[$coin]['lots'],
-            fn($lot) => $lot['amount'] > 0
+        if ($remaining > 0) {
+            throw new \Exception("Insufficient balance for $coin");
+        }
+
+        $this->balances[$coin]['lots'] = array_values(
+            array_filter($this->balances[$coin]['lots'], fn($l) => $l['amount'] > 0)
         );
 
-        $this->balances[$coin]['totalAmount'] -= ($sellAmount - $remaining);
+        $this->balances[$coin]['totalAmount'] -= $amount;
 
-        $proceeds = $sellAmount * $pricePerCoin;
-        $gain = $proceeds - $cost;
-
-        return [
-            'disposedAmount' => $sellAmount - $remaining,
-            'cost' => $cost,
-            'proceeds' => $proceeds,
-            'gain' => $gain,
-            'consumedLots' => $consumedLots
-        ];
+        return [$cost, $consumedLots];
     }
 
-    // inside FifoCalculator::processTransaction
     public function processTransaction(array $tx): array
     {
-        // Normalize inputs
-        $type = isset($tx['type']) ? strtoupper($tx['type']) : 'BUY';
-        $date = $tx['date'] ?? date('Y-m-d H:i:s');
-        $buyAmount = floatval($tx['buyAmount'] ?? 0);
-        $sellAmount = floatval($tx['sellAmount'] ?? 0);
-        $buyPricePerCoin = floatval($tx['buyPricePerCoin'] ?? 0);
-        $buyCoin = $tx['buyCoin'] ?? null;
-        $sellCoin = $tx['sellCoin'] ?? null;
+        $type = strtoupper($tx['type'] ?? '');
+        $date = $tx['date'] ?? date('Y-m-d');
 
-        try {
-            if ($type === 'BUY') {
-                $buyCoin = $buyCoin ?: 'UNKNOWN';
-                $this->addLot($buyCoin, $buyAmount, $buyPricePerCoin, $date);
-                return ['disposal' => null];
-            }
-
-            if ($type === 'SELL') {
-                $sellCoin = $sellCoin ?: 'UNKNOWN';
-                return ['disposal' => $this->sell($sellCoin, $sellAmount, $buyPricePerCoin, $date)];
-            }
-
-            if ($type === 'TRADE') {
-                $buyCoin = $buyCoin ?: 'UNKNOWN';
-                $sellCoin = $sellCoin ?: 'UNKNOWN';
-                $sellResult = $this->sell($sellCoin, $sellAmount, $buyPricePerCoin, $date);
-                $this->addLot($buyCoin, $buyAmount, $buyPricePerCoin, $date);
-                return ['disposal' => $sellResult];
-            }
-
+        if ($type === 'BUY') {
+            $this->addLot(
+                $tx['buyCoin'],
+                (float)$tx['buyAmount'],
+                (float)$tx['buyPricePerCoin'],
+                $date
+            );
             return ['disposal' => null];
-        } catch (\Exception $e) {
-            // Instead of breaking, return a disposal with zeros
+        }
+
+        if ($type === 'TRADE') {
+            // SARS rule:
+            // proceeds = value of asset received
+            $proceeds = $tx['buyAmount'] * $tx['buyPricePerCoin'];
+
+            // BTC sold = proceeds / BTC market price
+            $sellAmount = $proceeds / $tx['sellPricePerCoin'];
+
+            [$cost, $lots] = $this->fifoSell($tx['sellCoin'], $sellAmount);
+
+            $this->addLot(
+                $tx['buyCoin'],
+                (float)$tx['buyAmount'],
+                (float)$tx['buyPricePerCoin'],
+                $date
+            );
+
             return [
                 'disposal' => [
-                    'disposedAmount' => 0,
-                    'cost' => 0,
-                    'proceeds' => 0,
-                    'gain' => 0,
-                    'consumedLots' => [],
-                    'error' => $e->getMessage()
+                    'disposedAmount' => $sellAmount,
+                    'cost' => $cost,
+                    'proceeds' => $proceeds,
+                    'gain' => $proceeds - $cost,
+                    'consumedLots' => $lots
                 ]
             ];
         }
+
+        if ($type === 'SELL') {
+            // Ensure we have sellCoin, sellAmount, and sellPricePerCoin
+            $sellCoin = $tx['sellCoin'] ?? null;
+            $sellAmount = isset($tx['sellAmount']) ? (float)$tx['sellAmount'] : 0;
+            $sellPricePerCoin = isset($tx['sellPricePerCoin']) ? (float)$tx['sellPricePerCoin'] : 0;
+
+            if (!$sellCoin || $sellAmount <= 0 || $sellPricePerCoin <= 0) {
+                return ['disposal' => null]; // invalid SELL
+            }
+
+            // Perform FIFO sale
+            [$cost, $lots] = $this->fifoSell($sellCoin, $sellAmount);
+
+            // Calculate proceeds and gain
+            $proceeds = $sellAmount * $sellPricePerCoin;
+            $gain = $proceeds - $cost;
+
+            return [
+                'disposal' => [
+                    'disposedAmount' => $sellAmount,
+                    'cost' => $cost,
+                    'proceeds' => $proceeds,
+                    'gain' => $gain,
+                    'consumedLots' => $lots
+                ]
+            ];
+        }
+
+
+        return ['disposal' => null];
     }
-
-
 }
