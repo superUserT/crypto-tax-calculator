@@ -1,9 +1,3 @@
-Below is a clean, professional **`documentation.md`** suitable for a repository.
-It assumes **Linux (Debian/Ubuntu-based distributions)** and a Symfony-based PHP backend using the built-in PHP server.
-
----
-
-````md
 # Backend Server Documentation (Linux)
 
 This document describes how to **install dependencies** and **run the backend server** on a **Linux system**.  
