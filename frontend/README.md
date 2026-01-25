@@ -1,70 +1,205 @@
-# Getting Started with Create React App
+# React Frontend Installation & Usage Documentation (Linux)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This document describes how to **install**, **configure**, and **run** the React frontend that connects to the PHP backend server.  
+These instructions are intended for **Linux (Debian/Ubuntu-based)** systems.
 
-## Available Scripts
+The frontend is responsible for:
+- Loading transaction data from a CSV file
+- Sending the data to the PHP backend
+- Displaying calculated **capital gains tax results** to the user
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## System Requirements
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Linux (Debian/Ubuntu-based)
+- Node.js **18+** (LTS recommended)
+- npm **9+**
+- Running PHP backend server
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## Project Structure Assumption
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
 
-### `npm run build`
+project-root/
+├── backend/
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── test.csv
+└── README.md
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+````
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+⚠️ **Important**  
+The file **`test.csv` must exist in the root of the project**.  
+This file is loaded by the frontend and used as the **input dataset** for capital gains tax calculations.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## Installing Node.js and npm
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 1. Install Node.js (Recommended via APT)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Update package lists:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+sudo apt update
+````
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Install Node.js and npm:
 
-## Learn More
+```bash
+sudo apt install nodejs npm
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Verify installation:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+node --version
+npm --version
+```
 
-### Code Splitting
+Ensure Node.js version is **18 or higher**.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## Frontend Installation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 1. Navigate to the Frontend Directory
 
-### Making a Progressive Web App
+```bash
+cd frontend
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+### 2. Install Dependencies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Install all frontend dependencies using npm:
 
-### Deployment
+```bash
+npm install
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This will create the `node_modules/` directory and lock dependency versions.
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Running the Frontend
+
+### 1. Start the Development Server
+
+using Create React App:
+
+```bash
+npm start
+```
+
+Expected output:
+
+```
+Local: http://localhost:3000
+```
+
+---
+
+### 2. Access the Application
+
+Open your browser and navigate to:
+
+```
+http://localhost:3000
+```
+
+Ensure the **PHP backend server is already running**, typically on:
+
+```
+http://localhost:8000
+```
+
+---
+
+## CSV Input File (`test.csv`)
+
+### Purpose
+
+* `test.csv` contains transaction data used to calculate **capital gains tax**
+* The frontend loads this file automatically
+* The parsed data is sent to the backend API for processing
+
+---
+
+### Requirements
+
+* The file **must be named exactly**: `test.csv`
+* The file **must be located in the project root**
+* The frontend assumes the file exists on application load
+
+Example location:
+
+```
+project-root/test.csv
+```
+
+---
+
+### Usage Flow
+
+1. Frontend loads `test.csv`
+2. CSV data is parsed into structured records
+3. Data is sent to the PHP backend API
+4. Backend calculates capital gains tax
+5. Results are returned and displayed to the user
+
+If `test.csv` is missing or malformed, calculations will fail.
+
+---
+
+## Common Issues
+
+### `npm: command not found`
+
+Node.js or npm is not installed:
+
+```bash
+sudo apt install nodejs npm
+```
+
+---
+
+### Frontend Loads but No Data Appears
+
+* Confirm `test.csv` exists in the project root
+* Verify backend server is running
+* Check browser console for network or CORS errors
+
+---
+
+### Backend API Not Responding
+
+Ensure the PHP server is running:
+
+```bash
+cd backend
+php -S localhost:8000 -t public
+```
+
+---
+
+## Notes
+
+* These instructions are **Linux-only**
+* The React development server is intended for **development use**
+* For production, build the frontend using:
+
+```bash
+npm run build
+```
+
+and serve the static files using a proper web server.
+
+---
