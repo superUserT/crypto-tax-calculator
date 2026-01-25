@@ -1,7 +1,0 @@
-Open terminal and run the following (backend):
-    cd backend
-    php -S localhost:8000 -t public
-
-Open terminal and run the following (frontend):
-    cd frontend
-    npm start
