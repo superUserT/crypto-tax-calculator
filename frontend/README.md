@@ -203,3 +203,219 @@ npm run build
 and serve the static files using a proper web server.
 
 ---
+
+# React Frontend Installation & Usage Documentation (Windows)
+
+This document describes how to **install**, **configure**, and **run** the React frontend that connects to the PHP backend server.  
+These instructions are intended for **Windows 10/11** systems.
+
+The frontend is responsible for:
+- Loading transaction data from a CSV file
+- Sending the data to the PHP backend
+- Displaying calculated **capital gains tax results** to the user
+
+---
+
+## System Requirements
+
+- Windows 10 or Windows 11
+- Node.js **18+** (LTS recommended)
+- npm **9+**
+- Running PHP backend server
+- Command Prompt, PowerShell, or Windows Terminal
+
+---
+
+## Project Structure Assumption
+
+```
+project-root/
+├── backend/
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── test.csv
+└── README.md
+```
+
+⚠️ **Important**  
+The file **`test.csv` must exist in the root of the project**.  
+This file is loaded by the frontend and used as the **input dataset** for capital gains tax calculations.
+
+---
+
+## Installing Node.js and npm
+
+### 1. Install Node.js (Windows)
+
+Download the Node.js **LTS (18+)** installer from:
+
+https://nodejs.org/
+
+Run the installer and follow the setup prompts.  
+Ensure the option **“Add to PATH”** is selected during installation.
+
+---
+
+### 2. Verify Installation
+
+Open **Command Prompt** or **PowerShell** and run:
+
+```
+node --version
+npm --version
+```
+
+Ensure the Node.js version is **18 or higher**.
+
+---
+
+## Frontend Installation
+
+### 1. Navigate to the Frontend Directory
+
+From the project root:
+
+```
+cd frontend
+```
+
+---
+
+### 2. Install Dependencies
+
+Install all frontend dependencies using npm:
+
+```
+npm install
+```
+
+This will create the `node_modules/` directory and lock dependency versions.
+
+---
+
+## Running the Frontend
+
+### 1. Start the Development Server
+
+Using Create React App:
+
+```
+npm start
+```
+
+Expected output:
+
+```
+Local: http://localhost:3000
+```
+
+---
+
+### 2. Access the Application
+
+Open your browser and navigate to:
+
+```
+http://localhost:3000
+```
+
+Ensure the **PHP backend server is already running**, typically on:
+
+```
+http://localhost:8000
+```
+
+---
+
+## CSV Input File (`test.csv`)
+
+### Purpose
+
+- `test.csv` contains transaction data used to calculate **capital gains tax**
+- The frontend loads this file automatically
+- The parsed data is sent to the backend API for processing
+
+---
+
+### Requirements
+
+- The file **must be named exactly**: `test.csv`
+- The file **must be located in the project root**
+- The frontend assumes the file exists on application load
+
+Example location:
+
+```
+project-root/test.csv
+```
+
+---
+
+### Usage Flow
+
+1. Frontend loads `test.csv`
+2. CSV data is parsed into structured records
+3. Data is sent to the PHP backend API
+4. Backend calculates capital gains tax
+5. Results are returned and displayed to the user
+
+If `test.csv` is missing or malformed, calculations will fail.
+
+---
+
+## Common Issues
+
+### `npm` or `node` Command Not Found
+
+Node.js is not installed correctly or not added to PATH.
+
+**Solution:**
+- Reinstall Node.js from https://nodejs.org/
+- Restart Command Prompt or PowerShell
+- Verify installation:
+
+```
+node --version
+npm --version
+```
+
+---
+
+### Frontend Loads but No Data Appears
+
+- Confirm `test.csv` exists in the project root
+- Verify the backend server is running
+- Check the browser console for network or CORS errors
+
+---
+
+### Backend API Not Responding
+
+Ensure the PHP backend server is running:
+
+```
+cd backend
+php -S localhost:8000 -t public
+```
+
+---
+
+## Production Build (Optional)
+
+To create a production-ready build of the frontend:
+
+```
+npm run build
+```
+
+This will generate a `build/` directory containing optimized static files.
+
+---
+
+## Notes
+
+- These instructions are **Windows-only**
+- The React development server is intended for **development use**
+- For production deployments, serve the built frontend using a web server such as **Nginx** or **Apache**
