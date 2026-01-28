@@ -48,7 +48,7 @@ export default function FinalSummary({ processedTransactions, finalBalances }) {
             <span style={{ fontSize: "14px", color: "#94a3b8" }}>Total Capital Gain</span>
           </div>
           <p style={{ fontSize: "32px", fontWeight: "700", ...styles.mono, ...(totalGain >= 0 ? styles.success : styles.danger) }}>
-            {totalGain >= 0 ? '+' : ''}${formatNumber(totalGain)}
+            {totalGain >= 0 ? '+' : ''}R{formatNumber(totalGain)}
           </p>
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function FinalSummary({ processedTransactions, finalBalances }) {
                         <div key={j} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
                           <span style={styles.mono}>{formatNumber(lot.amount)}</span>
                           <span style={{ color: "#64748b" }}>@</span>
-                          <span style={styles.mono}>${formatNumber(lot.pricePerCoin)}</span>
+                          <span style={styles.mono}>R{formatNumber(lot.pricePerCoin)}</span>
                           <span style={{ fontSize: "12px", color: "#64748b" }}>({lot.date})</span>
                         </div>
                       ))}
@@ -122,7 +122,7 @@ export default function FinalSummary({ processedTransactions, finalBalances }) {
                 {gain >= 0 ? <TrendingUp size={16} color="#22c55e" /> : <TrendingDown size={16} color="#ef4444" />}
               </div>
               <p style={{ fontSize: "24px", fontWeight: "700", ...styles.mono, ...(gain >= 0 ? styles.success : styles.danger) }}>
-                {gain >= 0 ? '+' : ''}${formatNumber(gain)}
+                {gain >= 0 ? '+' : ''}R{formatNumber(gain)}
               </p>
             </div>
           ))}

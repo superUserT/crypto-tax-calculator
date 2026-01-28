@@ -99,7 +99,7 @@ export default function TransactionsTable({ processedTransactions }) {
                       )}
                     </td>
                     <td style={{ ...styles.td, textAlign: "right", ...styles.mono }}>
-                      {tx.buyPricePerCoin > 0 && `$${formatNumber(tx.buyPricePerCoin)}`}
+                      {tx.buyPricePerCoin > 0 && `R${formatNumber(tx.buyPricePerCoin)}`}
                     </td>
                   </tr>
 
@@ -114,9 +114,9 @@ export default function TransactionsTable({ processedTransactions }) {
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "16px", marginBottom: "24px" }}>
                           {[
                             { label: "Disposed Amount", value: formatNumber(disposal.disposedAmount) },
-                            { label: "Cost Basis", value: `$${formatNumber(disposal.cost)}` },
-                            { label: "Proceeds", value: `$${formatNumber(disposal.proceeds)}` },
-                            { label: "Gain/Loss", value: `${disposal.gain >= 0 ? '+' : ''}$${formatNumber(disposal.gain)}`, isGain: disposal.gain >= 0 }
+                            { label: "Cost Basis", value: `R${formatNumber(disposal.cost)}` },
+                            { label: "Proceeds", value: `R${formatNumber(disposal.proceeds)}` },
+                            { label: "Gain/Loss", value: `${disposal.gain >= 0 ? '+' : ''}R${formatNumber(disposal.gain)}`, isGain: disposal.gain >= 0 }
                           ].map((item, j) => (
                             <div key={j} style={{ padding: "12px", borderRadius: "8px", background: "rgba(30, 41, 59, 0.5)" }}>
                               <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "4px" }}>{item.label}</p>
@@ -136,7 +136,7 @@ export default function TransactionsTable({ processedTransactions }) {
                               <div key={j} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "8px", borderRadius: "8px", background: "rgba(30, 41, 59, 0.3)", fontSize: "14px" }}>
                                 <span style={styles.mono}>{formatNumber(lot.amount)}</span>
                                 <span style={{ color: "#64748b" }}>@</span>
-                                <span style={styles.mono}>${formatNumber(lot.pricePerCoin)}</span>
+                                <span style={styles.mono}>R{formatNumber(lot.pricePerCoin)}</span>
                                 <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "auto" }}>{lot.date}</span>
                               </div>
                             ))}
