@@ -189,3 +189,219 @@ composer install
 * For production deployments, use a proper web server such as **Nginx or Apache** with PHP-FPM.
 
 ---
+
+# Backend Server Documentation (Windows)
+
+This document describes how to install dependencies and run the backend server on a **Windows system**.  
+These instructions are written for **Windows 10/11**, **PHP 8.3**, and a Symfony-based backend.
+
+---
+
+## System Requirements
+
+- Windows 10 or Windows 11  
+- PHP 8.3  
+- Composer 2.x  
+- Git (optional but recommended)  
+- Command Prompt, PowerShell, or Windows Terminal  
+
+---
+
+## PHP Extensions Required
+
+The backend relies on **Symfony** and requires the following PHP extensions:
+
+- `xml` (mandatory)
+- `intl`
+- `mbstring`
+- `curl`
+- `zip`
+- `pdo`
+
+Failure to enable these extensions will prevent the application from booting.
+
+---
+
+## Installation Instructions
+
+### 1. Install PHP 8.3
+
+Download PHP 8.3 (Thread Safe) from:  
+https://windows.php.net/download/
+
+Extract the ZIP file to a directory, for example:
+
+```
+C:\php
+```
+
+Add PHP to your system PATH:
+
+- Open **System Properties**
+- Go to **Environment Variables**
+- Edit `Path`
+- Add:
+
+```
+C:\php
+```
+
+Verify PHP installation:
+
+```
+php --version
+```
+
+Expected output:
+
+```
+PHP 8.3.x (cli)
+```
+
+---
+
+### 2. Enable Required PHP Extensions
+
+In the PHP installation directory, locate:
+
+```
+php.ini-development
+```
+
+Rename it to:
+
+```
+php.ini
+```
+
+Open `php.ini` and uncomment the following lines:
+
+```ini
+extension=xml
+extension=intl
+extension=mbstring
+extension=curl
+extension=zip
+extension=pdo_mysql
+```
+
+Save the file.
+
+Verify enabled extensions:
+
+```
+php -m
+```
+
+Ensure `xml`, `intl`, `mbstring`, `curl`, `zip`, and `pdo` appear in the list.
+
+---
+
+### 3. Install Composer
+
+Download and install Composer for Windows:  
+https://getcomposer.org/Composer-Setup.exe
+
+Follow the installer prompts and ensure it uses your PHP 8.3 installation.
+
+Verify Composer installation:
+
+```
+composer --version
+```
+
+---
+
+### 4. Install Project Dependencies
+
+Navigate to the backend root directory (where `composer.json` is located):
+
+```
+cd backend
+```
+
+Install dependencies using the lock file:
+
+```
+composer install
+```
+
+This will create the `vendor/` directory and generate required autoload files.
+
+---
+
+## Running the Server
+
+### Start the PHP Development Server
+
+From the backend root directory:
+
+```
+php -S localhost:8000 -t public
+```
+
+Expected output:
+
+```
+PHP 8.3.x Development Server (http://localhost:8000) started
+```
+
+---
+
+## Accessing the API
+
+- **Base URL:**  
+  http://localhost:8000
+
+- **Example endpoint:**  
+  http://localhost:8000/api
+
+The server must remain running in the terminal while the backend is in use.
+
+---
+
+## Common Issues
+
+### Missing `autoload_runtime.php`
+
+If you see an error similar to:
+
+```
+Failed opening required 'vendor/autoload_runtime.php'
+```
+
+Re-run:
+
+```
+composer install
+```
+
+---
+
+### XML Extension Error During Composer Install
+
+If Composer reports:
+
+```
+requires ext-xml -> it is missing from your system
+```
+
+Install the extension by enabling it in `php.ini`:
+
+```ini
+extension=xml
+```
+
+Restart the terminal and retry:
+
+```
+composer install
+```
+
+---
+
+## Notes
+
+- These instructions are **Windows-only**
+- The built-in PHP server is intended for **development use only**
+- For production deployments, use a proper web server such as **Nginx** or **Apache** with PHP-FPM
