@@ -5,109 +5,8 @@ import TransactionsTable from "./components/TransactionsTable";
 import FinalSummary from "./components/FinalSummary";
 import { styles } from "./styles/style";
 
-/* =========================
-   AUTH HELPERS
-========================= */
-async function login(email, password) {
-  const res = await fetch("http://localhost:8000/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
-  });
-
-  if (!res.ok) throw new Error("Login failed");
-  return res.json();
-}
-
-async function register(name, email, password) {
-  const res = await fetch("http://localhost:8000/api/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password })
-  });
-
-  if (!res.ok) throw new Error("Register failed");
-  return res.json();
-}
-
-/* =========================
-   AUTH COMPONENT
-========================= */
-function Auth({ onAuth }) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const submit = async (e) => {
-    e.preventDefault();
-    try {
-      if (isLogin) {
-        const data = await login(email, password);
-        localStorage.setItem("token", data.token);
-        onAuth();
-      } else {
-        await register(name, email, password);
-        alert("Registered successfully. You can now log in.");
-        setIsLogin(true);
-      }
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  return (
-    <div style={{ maxWidth: 400, margin: "auto", paddingTop: 60 }}>
-      <h2>{isLogin ? "Login" : "Register"}</h2>
-
-      <form onSubmit={submit}>
-        {!isLogin && (
-          <input
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            style={{ width: "100%", marginBottom: 10 }}
-          />
-        )}
-
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: 10 }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: 10 }}
-        />
-
-        <button style={{ width: "100%" }}>
-          {isLogin ? "Login" : "Register"}
-        </button>
-      </form>
-
-      <button
-        onClick={() => setIsLogin(!isLogin)}
-        style={{ marginTop: 10, width: "100%" }}
-      >
-        {isLogin ? "Create account" : "Have an account? Login"}
-      </button>
-    </div>
-  );
-}
-
 
 function App() {
-  const [isAuth, setIsAuth] = useState(
-    Boolean(localStorage.getItem("token"))
-  );
   const [transactions, setTransactions] = useState([]);
   const [processed, setProcessed] = useState([]);
   const [finalBalances, setFinalBalances] = useState({});
@@ -118,10 +17,7 @@ function App() {
     try {
       const res = await fetch("http://localhost:8000/api/calculate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transactions }),
       });
 
@@ -139,15 +35,6 @@ function App() {
       setIsCalculating(false);
     }
   };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setIsAuth(false);
-  };
-
-  if (!isAuth) {
-    return <Auth onAuth={() => setIsAuth(true)} />;
-  }
 
   return (
     <div style={styles.container}>
@@ -227,7 +114,6 @@ function App() {
             </section>
           )}
         </div>
-      <button onClick={logout}>Logout</button>
       <br /><br />
         {/* Footer */}
         <footer style={{ marginTop: "64px", paddingTop: "32px", borderTop: "1px solid rgba(71, 85, 105, 0.3)", textAlign: "center", fontSize: "14px", color: "#64748b" }}>
