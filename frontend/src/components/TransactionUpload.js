@@ -1,20 +1,34 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Upload, FileSpreadsheet } from "lucide-react";
 import { parseCSV } from "../utils/parseCSV";
 import { styles } from "../styles/style";
 
 export default function TransactionUpload({ onDataReady }) {
   const fileInputRef = useRef(null);
+  const [error, setError] = useState("");
 
   const handleFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!/\.(csv|xlsx?|xls)$/i.test(file.name)) {
+      setError("Invalid file type. Please upload a CSV or Excel file.");
+      onDataReady([]); // clear previous
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      const content = event.target?.result;
-      const transactions = parseCSV(content);
-      onDataReady(transactions);
+      try {
+        const content = event.target?.result;
+        const transactions = parseCSV(content);
+        setError(""); // clear error
+        onDataReady(transactions);
+      } catch (err) {
+        setError(err.message);
+        onDataReady([]); // clear previous
+      }
     };
     reader.readAsText(file);
   };
@@ -22,14 +36,14 @@ export default function TransactionUpload({ onDataReady }) {
   return (
     <div
       onClick={() => fileInputRef.current?.click()}
-      style={{ ...styles.card, ...styles.uploadCard }}
+      style={{ ...styles.card, ...styles.uploadCard, position: "relative" }}
       onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(45, 212, 191, 0.5)"}
       onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(71, 85, 105, 0.5)"}
     >
       <input
         ref={fileInputRef}
         type="file"
-        accept=".csv"
+        accept=".csv,.xls,.xlsx"
         onChange={handleFile}
         style={{ display: "none" }}
       />
@@ -47,9 +61,24 @@ export default function TransactionUpload({ onDataReady }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#64748b" }}>
           <FileSpreadsheet size={16} />
-          <span>Supports .csv files with transaction data</span>
+          <span>Supports .csv or Excel files with transaction data</span>
         </div>
       </div>
+
+      {error && (
+        <div style={{
+          marginTop: "16px",
+          padding: "12px",
+          borderRadius: "12px",
+          background: "rgba(239, 68, 68, 0.1)",
+          color: "#ef4444",
+          fontWeight: "500",
+          textAlign: "center",
+        }}>
+          {error}
+        </div>
+      )}
+
     </div>
   );
 }
