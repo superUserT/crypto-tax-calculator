@@ -33,9 +33,17 @@ function App() {
       setProcessed(data.processedTransactions);
       setFinalBalances(data.finalBalances);
     } catch (err) {
-      console.error("Error calculating FIFO:", err);
-      setErrorMessage(err.message || "An unexpected error occurred");
-    } finally {
+        console.error("Error calculating FIFO:", err);
+
+        // Friendly messages
+        const message =
+          err.message === "Failed to fetch"
+            ? "Cannot reach backend. Make sure the server is running"
+            : err.message || "Error calculating FIFO.";
+
+        setErrorMessage(message);
+      }
+ finally {
       setIsCalculating(false);
     }
   };
