@@ -13,7 +13,7 @@ export default function TransactionUpload({ onDataReady }) {
 
     // Validate file type
     if (!/\.(csv|xlsx?|xls)$/i.test(file.name)) {
-      setError("Invalid file type. Please upload a CSV or Excel file.");
+      setError("Invalid file type. Please upload a validfile.");
       onDataReady([]); // clear previous
       return;
     }
