@@ -212,29 +212,31 @@ function App() {
                         style={{
                           background: "none",
                           border: "none",
+                          ...styles.subtitle,
                           color: "#60a5fa",
-                          fontWeight: 600,
                           cursor: "pointer",
-                          marginBottom: "12px"
+                          marginBottom: "50px",
+                          marginRight: "50px"
                         }}
                       >
                         Download CSV Template
                       </button>
-
-                      <br />
 
                       <a
                         href="https://www.taxtim.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
+                          ...styles.subtitle,
                           color: "#34d399",
                           fontWeight: 600,
-                          textDecoration: "none"
+                          textDecoration: "none",
+                          marginBottom: "50px"
                         }}
                       >
                         Visit TaxTim
                       </a>
+                      <br />
                     </div>
 
 
