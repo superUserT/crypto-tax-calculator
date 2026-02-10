@@ -113,6 +113,29 @@ function App() {
     document.body.removeChild(link);
   };
 
+  const downloadTemplate = () => {
+    const headers = [
+      "type",
+      "buyCoin",
+      "sellCoin",
+      "buyAmount",
+      "sellAmount",
+      "buyPricePerCoin",
+      "sellPricePerCoin",
+      "date",
+    ];
+
+    const csvContent = headers.join(",") + "\n";
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "transaction_template.csv";
+    link.click();
+  };
+
+
   return (
     <Router>
       <div style={styles.container}>
@@ -183,19 +206,37 @@ function App() {
 
                   {/* Upload Section */}
                   <section>
-                    <a
-                      href="/transaction_template.csv"
-                      download
-                      style={{
-                        display: "inline-block",
-                        marginBottom: "12px",
-                        color: "#60a5fa",
-                        fontWeight: 600,
-                        textDecoration: "none",
-                      }}
-                    >
-                      Download CSV Template
-                    </a>
+                    <div style={{ textAlign: "center" }}>
+                      <button
+                        onClick={downloadTemplate}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#60a5fa",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          marginBottom: "12px"
+                        }}
+                      >
+                        Download CSV Template
+                      </button>
+
+                      <br />
+
+                      <a
+                        href="https://www.taxtim.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "#34d399",
+                          fontWeight: 600,
+                          textDecoration: "none"
+                        }}
+                      >
+                        Visit TaxTim
+                      </a>
+                    </div>
+
 
                     <TransactionUpload onDataReady={setTransactions} />
 
