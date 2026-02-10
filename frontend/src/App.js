@@ -33,17 +33,16 @@ function App() {
       setProcessed(data.processedTransactions);
       setFinalBalances(data.finalBalances);
     } catch (err) {
-        console.error("Error calculating FIFO:", err);
+      console.error("Error calculating FIFO:", err);
 
-        // Friendly messages
-        const message =
-          err.message === "Failed to fetch"
-            ? "Cannot reach backend. Make sure the server is running"
-            : err.message || "Error calculating FIFO.";
+      // Friendly messages
+      const message =
+        err.message === "Failed to fetch"
+          ? "Cannot reach backend. Make sure the server is running"
+          : err.message || "Error calculating FIFO.";
 
-        setErrorMessage(message);
-      }
- finally {
+      setErrorMessage(message);
+    } finally {
       setIsCalculating(false);
     }
   };
@@ -53,12 +52,34 @@ function App() {
       <div style={styles.container}>
         <div style={styles.wrapper}>
           {/* Top Navigation */}
-          <nav style={{ display: "flex", justifyContent: "center", gap: "32px", marginBottom: "48px" }}>
-            <Link to="/" style={{ color: "#2dd4bf", fontWeight: "600", textDecoration: "none" }}>
+          <nav
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "32px",
+              marginBottom: "48px",
+            }}
+          >
+            <Link
+              to="/"
+              style={{
+                color: "#2dd4bf",
+                fontWeight: "600",
+                textDecoration: "none",
+              }}
+            >
               <Calculator size={16} style={{ marginRight: "6px" }} />
               Calculator
             </Link>
-            <Link to="/tax-info" style={{ color: "#a78bfa", fontWeight: "600", textDecoration: "none" }}>
+
+            <Link
+              to="/tax-info"
+              style={{
+                color: "#a78bfa",
+                fontWeight: "600",
+                textDecoration: "none",
+              }}
+            >
               <Info size={16} style={{ marginRight: "6px" }} />
               Crypto Tax Info
             </Link>
@@ -86,7 +107,23 @@ function App() {
 
                   {/* Upload Section */}
                   <section>
+                    {/* ✅ Downloadable CSV template */}
+                    <a
+                      href="/transaction_template.csv"
+                      download
+                      style={{
+                        display: "inline-block",
+                        marginBottom: "12px",
+                        color: "#60a5fa",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                      }}
+                    >
+                      Download CSV Template
+                    </a>
+
                     <TransactionUpload onDataReady={setTransactions} />
+
                     {transactions.length > 0 && (
                       <div
                         style={{
@@ -103,6 +140,7 @@ function App() {
                         <p style={{ color: "#22c55e", fontWeight: "500" }}>
                           ✓ {transactions.length} transactions loaded
                         </p>
+
                         <button
                           onClick={calculate}
                           disabled={isCalculating}
@@ -114,10 +152,7 @@ function App() {
                         >
                           {isCalculating ? (
                             <>
-                              <Loader2
-                                size={20}
-                                style={{ animation: "spin 1s linear infinite" }}
-                              />
+                              <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
                               Calculating...
                             </>
                           ) : (
@@ -156,10 +191,7 @@ function App() {
                   {/* Summary */}
                   {processed.length > 0 && (
                     <section>
-                      <FinalSummary
-                        processedTransactions={processed}
-                        finalBalances={finalBalances}
-                      />
+                      <FinalSummary processedTransactions={processed} finalBalances={finalBalances} />
                     </section>
                   )}
                 </div>
