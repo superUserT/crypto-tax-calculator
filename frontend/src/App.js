@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Calculator, Loader2, Sparkles, Info } from "lucide-react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import TransactionUpload from "./components/TransactionUpload";
-import TransactionsTable from "./components/TransactionsTable";
-import FinalSummary from "./components/FinalSummary";
-import CryptoTaxInfo from "./components/CryptoTaxInfo";
-import { styles } from "./styles/style";
+import { Link } from "react-router-dom";
 
-function App() {
+import TransactionUpload from "@/components/TransactionUpload";
+import TransactionsTable from "@/components/TransactionsTable";
+import FinalSummary from "@/components/FinalSummary";
+import ExportReport from "@/components/ExportReport";
+
+const App = () => {
   const [transactions, setTransactions] = useState([]);
   const [processed, setProcessed] = useState([]);
   const [finalBalances, setFinalBalances] = useState({});
@@ -17,6 +17,7 @@ function App() {
   const calculate = async () => {
     setIsCalculating(true);
     setErrorMessage("");
+
     try {
       const res = await fetch("http://localhost:8000/api/calculate", {
         method: "POST",
@@ -35,7 +36,6 @@ function App() {
     } catch (err) {
       console.error("Error calculating FIFO:", err);
 
-      // Friendly messages
       const message =
         err.message === "Failed to fetch"
           ? "Cannot reach backend. Make sure the server is running"
@@ -48,186 +48,126 @@ function App() {
   };
 
   return (
-    <Router>
-      <div style={styles.container}>
-        <div style={styles.wrapper}>
-          {/* Top Navigation */}
-          <nav
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "32px",
-              marginBottom: "48px",
-            }}
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-5xl px-4 py-8">
+
+        {/* Top Navigation */}
+        <nav className="mb-12 flex items-center justify-center gap-8">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary no-underline"
           >
-            <Link
-              to="/"
-              style={{
-                color: "#2dd4bf",
-                fontWeight: "600",
-                textDecoration: "none",
-              }}
-            >
-              <Calculator size={16} style={{ marginRight: "6px" }} />
+            <Calculator className="h-4 w-4" />
+            Calculator
+          </Link>
+
+          <Link
+            to="/tax-info"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent no-underline"
+          >
+            <Info className="h-4 w-4" />
+            Crypto Tax Info
+          </Link>
+        </nav>
+
+        <div className="flex flex-col gap-8">
+
+          {/* Header */}
+          <header className="text-center">
+            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              FIFO Tax Calculator
+            </div>
+
+            <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Crypto FIFO
+              </span>{" "}
               Calculator
-            </Link>
+            </h1>
 
-            <Link
-              to="/tax-info"
-              style={{
-                color: "#a78bfa",
-                fontWeight: "600",
-                textDecoration: "none",
-              }}
+            <p className="mt-2 text-sm text-muted-foreground">
+              Upload your transaction history and calculate capital gains using
+              the First-In-First-Out method
+            </p>
+          </header>
+
+          {/* Upload Section */}
+          <section>
+            <a
+              href="/transaction_template.csv"
+              download
+              className="mb-3 inline-block text-sm font-semibold text-primary no-underline hover:underline"
             >
-              <Info size={16} style={{ marginRight: "6px" }} />
-              Crypto Tax Info
-            </Link>
-          </nav>
+              Download CSV Template
+            </a>
 
-          <Routes>
-            {/* Calculator Page */}
-            <Route
-              path="/"
-              element={
-                <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-                  {/* Header */}
-                  <header style={styles.header}>
-                    <div style={styles.badge}>
-                      <Sparkles size={16} />
-                      FIFO Tax Calculator
-                    </div>
-                    <h1 style={styles.title}>
-                      <span style={styles.titleGradient}>Crypto FIFO</span> Calculator
-                    </h1>
-                    <p style={styles.subtitle}>
-                      Upload your transaction history and calculate capital gains using the First-In-First-Out method
-                    </p>
-                  </header>
+            <TransactionUpload onDataReady={setTransactions} />
 
-                  {/* Upload Section */}
-                  <section>
-                    {/* Downloadable CSV template */}
-                    <a
-                      href="/transaction_template.csv"
-                      download
-                      style={{
-                        display: "inline-block",
-                        marginBottom: "12px",
-                        color: "#60a5fa",
-                        fontWeight: 600,
-                        textDecoration: "none",
-                      }}
-                    >
-                      Download CSV Template
-                    </a>
+            {transactions.length > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                <p className="text-sm font-medium text-primary">
+                  ✓ {transactions.length} transactions loaded
+                </p>
 
-                    <TransactionUpload onDataReady={setTransactions} />
-
-                    {transactions.length > 0 && (
-                      <div
-                        style={{
-                          marginTop: "16px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: "16px",
-                          borderRadius: "12px",
-                          background: "rgba(34, 197, 94, 0.1)",
-                          border: "1px solid rgba(34, 197, 94, 0.2)",
-                        }}
-                      >
-                        <p style={{ color: "#22c55e", fontWeight: "500" }}>
-                          ✓ {transactions.length} transactions loaded
-                        </p>
-
-                        <button
-                          onClick={calculate}
-                          disabled={isCalculating}
-                          style={{
-                            ...styles.button,
-                            opacity: isCalculating ? 0.5 : 1,
-                            cursor: isCalculating ? "not-allowed" : "pointer",
-                          }}
-                        >
-                          {isCalculating ? (
-                            <>
-                              <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
-                              Calculating...
-                            </>
-                          ) : (
-                            <>
-                              <Calculator size={20} />
-                              Calculate FIFO
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </section>
-
-                  {/* Error Message */}
-                  {errorMessage && (
-                    <div
-                      style={{
-                        marginTop: "16px",
-                        padding: "16px",
-                        borderRadius: "12px",
-                        background: "rgba(239, 68, 68, 0.2)",
-                        color: "#ef4444",
-                        fontWeight: "600",
-                        textAlign: "center",
-                      }}
-                    >
-                      {errorMessage}
-                    </div>
+                <button
+                  onClick={calculate}
+                  disabled={isCalculating}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isCalculating ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Calculating...
+                    </>
+                  ) : (
+                    <>
+                      <Calculator className="h-5 w-5" />
+                      Calculate FIFO
+                    </>
                   )}
+                </button>
+              </div>
+            )}
+          </section>
 
-                  {/* Transactions Table */}
-                  <section>
-                    <TransactionsTable processedTransactions={processed} />
-                  </section>
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-sm font-semibold text-destructive">
+              {errorMessage}
+            </div>
+          )}
 
-                  {/* Summary */}
-                  {processed.length > 0 && (
-                    <section>
-                      <FinalSummary processedTransactions={processed} finalBalances={finalBalances} />
-                    </section>
-                  )}
-                </div>
-              }
-            />
+          {/* Transactions Table */}
+          <section>
+            <TransactionsTable processedTransactions={processed} />
+          </section>
 
-            {/* Crypto Tax Info Page */}
-            <Route path="/tax-info" element={<CryptoTaxInfo />} />
-          </Routes>
+          {/* Summary + Export */}
+          {processed.length > 0 && (
+            <section className="space-y-6">
+              <FinalSummary
+                processedTransactions={processed}
+                finalBalances={finalBalances}
+              />
 
-          {/* Footer */}
-          <footer
-            style={{
-              marginTop: "64px",
-              paddingTop: "32px",
-              borderTop: "1px solid rgba(71, 85, 105, 0.3)",
-              textAlign: "center",
-              fontSize: "14px",
-              color: "#64748b",
-            }}
-          >
-            <p>Crypto FIFO Calculator • Calculate your capital gains accurately</p>
-          </footer>
+              <div className="flex justify-center">
+                <ExportReport
+                  processedTransactions={processed}
+                  finalBalances={finalBalances}
+                />
+              </div>
+            </section>
+          )}
         </div>
 
-        {/* Spinner animation */}
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-        `}</style>
+        {/* Footer */}
+        <footer className="mt-16 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+          <p>Crypto FIFO Calculator • Calculate your capital gains accurately</p>
+        </footer>
       </div>
-    </Router>
+    </div>
   );
-}
+};
 
 export default App;
