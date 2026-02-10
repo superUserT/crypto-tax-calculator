@@ -107,7 +107,7 @@ function App() {
 
                   {/* Upload Section */}
                   <section>
-                    {/* ✅ Downloadable CSV template */}
+                    {/* Downloadable CSV template */}
                     <a
                       href="/transaction_template.csv"
                       download
