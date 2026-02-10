@@ -5,11 +5,8 @@ import { Calculator, Loader2, Sparkles, Info } from "lucide-react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 import TransactionUpload from "./components/TransactionUpload";
-
 import TransactionsTable from "./components/TransactionsTable";
-
 import FinalSummary from "./components/FinalSummary";
-
 import CryptoTaxInfo from "./components/CryptoTaxInfo";
 
 import { styles } from "./styles/style";
@@ -55,53 +52,61 @@ function App() {
     }
   };
 
-  // ✅ Download Full FIFO Report CSV
+  // ✅ Correct Download Report (Matches FinalSummary Structure)
   const downloadReport = () => {
     if (processed.length === 0) return;
 
+    // ✅ CSV Headers
     const headers = [
       "Date",
       "Type",
-      "Coin",
-      "Amount",
-      "PricePerUnit",
-      "TotalValue",
-      "CostBasis",
-      "Proceeds",
-      "GainLoss",
+      "Buy Coin",
+      "Sell Coin",
+      "Buy Amount",
+      "Sell Amount",
+      "Gain (R)",
+      "Cost Basis (R)",
+      "Proceeds (R)",
     ];
 
-    const rows = processed.map((tx) => [
-      tx.date,
-      tx.type,
-      tx.coin,
-      tx.amount,
-      tx.pricePerUnit,
-      tx.totalValue,
-      tx.costBasis || "",
-      tx.proceeds || "",
-      tx.gainLoss || "",
-    ]);
+    // ✅ Rows from processedTransactions
+    const rows = processed.map((txObj) => {
+      const tx = txObj.transaction || {};
+      const disposal = txObj.disposal || {};
 
-    // ✅ Add Final Balances Summary at Bottom
-    rows.push([]);
-    rows.push(["FINAL BALANCES"]);
-
-    Object.entries(finalBalances).forEach(([coin, balance]) => {
-      rows.push([coin, balance]);
+      return [
+        tx.date || "",
+        tx.type || "",
+        tx.buyCoin || "",
+        tx.sellCoin || "",
+        tx.buyAmount || "",
+        tx.sellAmount || "",
+        disposal.gain?.toFixed(2) || "0.00",
+        disposal.costBasis?.toFixed(2) || "0.00",
+        disposal.proceeds?.toFixed(2) || "0.00",
+      ];
     });
 
-    // Convert to CSV format
+    // ✅ Add Final Holdings Section
+    rows.push([]);
+    rows.push(["FINAL HOLDINGS"]);
+    rows.push(["Coin", "Amount"]);
+
+    Object.entries(finalBalances).forEach(([coin, data]) => {
+      rows.push([coin, data.totalAmount]);
+    });
+
+    // ✅ Build CSV
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [headers, ...rows].map((row) => row.join(",")).join("\n");
 
-    // Trigger Download
+    // ✅ Trigger Download
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
 
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "crypto_fifo_report.csv");
+    link.setAttribute("download", "crypto_fifo_full_report.csv");
 
     document.body.appendChild(link);
     link.click();
@@ -178,7 +183,6 @@ function App() {
 
                   {/* Upload Section */}
                   <section>
-                    {/* Download CSV template */}
                     <a
                       href="/transaction_template.csv"
                       download
@@ -274,21 +278,21 @@ function App() {
                         finalBalances={finalBalances}
                       />
 
-                      {/* ✅ Download Full Report Button */}
+                      {/* ✅ Download Button */}
                       <button
                         onClick={downloadReport}
                         style={{
-                          marginTop: "20px",
-                          padding: "12px 20px",
+                          marginTop: "25px",
+                          padding: "14px 22px",
                           borderRadius: "10px",
                           background: "#22c55e",
                           color: "white",
-                          fontWeight: "600",
+                          fontWeight: "700",
                           border: "none",
                           cursor: "pointer",
                         }}
                       >
-                        📥 Download Full FIFO Report
+                        📥 Download Full FIFO Tax Report
                       </button>
                     </section>
                   )}
@@ -321,7 +325,6 @@ function App() {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
           }
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         `}</style>
       </div>
     </Router>
