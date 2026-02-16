@@ -1,0 +1,5 @@
+type,buyCoin,sellCoin,buyAmount,sellAmount,buyPricePerCoin,sellPricePerCoin,date
+BUY,BTC,,2.9,,200000,,11/1/2024
+BUY,BTC,,2.9,,190000,,11/2/2024
+BUY,BTC,,2.9,,100000,,5/3/2025
+TRADE,ETH,BTC,40,0,2000,50000000,5/5/2025

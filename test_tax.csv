@@ -1,0 +1,3 @@
+type,buyCoin,sellCoin,buyAmount,sellAmount,buyPricePerCoin,sellPricePerCoin,date
+BUY,BTC,,1,,50000,,2024-01-01
+SELL,,BTC,,1,,150000,2025-01-01
