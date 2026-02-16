@@ -1,4 +1,4 @@
-import { Info, FileText } from "lucide-react";
+import { Info } from "lucide-react";
 import { styles } from "../styles/style";
 
 export default function CryptoTaxInfo() {
@@ -20,9 +20,11 @@ export default function CryptoTaxInfo() {
 
         {/* Intro */}
         <section style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>1. How Crypto is Taxed in South Africa</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>
+            How Crypto is Taxed in South Africa
+          </h2>
           <p style={{ color: "#cbd5e1", lineHeight: "1.6" }}>
-            In South Africa, cryptocurrency is treated as an **asset**, not currency. This means that **capital gains tax (CGT)** applies whenever you dispose of crypto:
+            In South Africa, cryptocurrency is treated as an asset, not currency. This means that capital gains tax (CGT) applies whenever you dispose of crypto:
           </p>
           <ul style={{ color: "#94a3b8", marginTop: "12px", lineHeight: "1.6", paddingLeft: "20px" }}>
             <li>SELLING crypto for cash</li>
@@ -36,18 +38,23 @@ export default function CryptoTaxInfo() {
 
         {/* Annual exclusion */}
         <section style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>2. Annual Exclusion</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>
+            Annual Exclusion
+          </h2>
           <p style={{ color: "#cbd5e1", lineHeight: "1.6" }}>
-            South African residents benefit from an **annual CGT exclusion of R40,000**. This means that the first R40,000 of capital gains each year are tax-free.
+            South African residents benefit from an annual CGT exclusion of R40,000. This means that the first R40,000 of capital gains each year are tax-free.
           </p>
         </section>
 
         {/* Marginal tax */}
         <section style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>3. Applying the Marginal Tax Rate</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>
+            Applying the Marginal Tax Rate
+          </h2>
           <p style={{ color: "#cbd5e1", lineHeight: "1.6" }}>
-            Only the **taxable gain** (total gain minus R40,000 exclusion) is taxed. South Africa uses **progressive income tax rates**, applied to the taxable gain.
+            Only the taxable gain (total gain minus R40,000 exclusion) is taxed. South Africa uses progressive income tax rates applied to the taxable gain.
           </p>
+
           <table style={{ width: "100%", marginTop: "16px", borderCollapse: "collapse", color: "#94a3b8" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid #374151" }}>
@@ -76,36 +83,72 @@ export default function CryptoTaxInfo() {
 
         {/* Example */}
         <section style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>4. Example Calculation</h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>
+            Example Calculation
+          </h2>
+
           <p style={{ color: "#cbd5e1", lineHeight: "1.6" }}>
             Suppose you sold some Bitcoin with the following details:
           </p>
+
           <ul style={{ color: "#94a3b8", marginTop: "12px", lineHeight: "1.6", paddingLeft: "20px" }}>
             <li>Disposed Amount: 1 BTC</li>
             <li>Cost Basis: R150,000</li>
             <li>Proceeds: R200,000</li>
           </ul>
+
           <p style={{ color: "#cbd5e1", marginTop: "12px" }}>
-            Total Gain = Proceeds - Cost Basis = R50,000<br />
-            Annual exclusion = R40,000<br />
-            Taxable gain = R50,000 - R40,000 = R10,000<br />
-            Assuming marginal rate of 18%, Tax Owed = R10,000 * 0.18 = R1,800
+            Total Gain = R50,000  
+            <br />Annual exclusion = R40,000  
+            <br />Taxable gain = R10,000  
+            <br />Tax Owed (18%) = R1,800
           </p>
         </section>
 
-        {/* Tips */}
+        {/* CSV Upload Guide */}
         <section style={{ marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>5. Tips for Users</h2>
-          <ul style={{ color: "#94a3b8", lineHeight: "1.6", paddingLeft: "20px" }}>
-            <li>Always keep records of your trades, purchases, and disposals.</li>
-            <li>Include trades made on foreign exchanges.</li>
-            <li>This calculator provides an <strong>estimate</strong>. For official tax filing, consult SARS or a tax professional.</li>
-            <li>Trades between cryptocurrencies are treated as disposals and are taxable.</li>
+          <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px" }}>
+            CSV Upload Format
+          </h2>
+
+          <p style={{ color: "#cbd5e1", lineHeight: "1.6" }}>
+            You can upload a CSV file containing your crypto transactions. The file must follow the required format for accurate FIFO capital gains calculations.
+          </p>
+
+          <h3 style={{ marginTop: "16px", color: "#e2e8f0" }}>Required Columns</h3>
+
+          <ul style={{ color: "#94a3b8", paddingLeft: "20px", lineHeight: "1.6" }}>
+            <li>type – BUY, SELL, or TRADE</li>
+            <li>buyCoin – Crypto asset received</li>
+            <li>sellCoin – Crypto asset disposed</li>
+            <li>buyAmount – Quantity received</li>
+            <li>sellAmount – Quantity disposed</li>
+            <li>buyPricePerCoin – Price per coin received (ZAR)</li>
+            <li>sellPricePerCoin – Price per coin disposed (ZAR)</li>
+            <li>date – Transaction date (YYYY-MM-DD)</li>
           </ul>
+
+          <h3 style={{ marginTop: "16px", color: "#e2e8f0" }}>Transaction Types</h3>
+
+          <ul style={{ color: "#94a3b8", paddingLeft: "20px", lineHeight: "1.6" }}>
+            <li>BUY – Purchasing crypto with fiat</li>
+            <li>SELL – Selling crypto for fiat</li>
+            <li>TRADE – Swapping one crypto for another</li>
+          </ul>
+
         </section>
 
         {/* Footer */}
-        <footer style={{ marginTop: "48px", paddingTop: "32px", borderTop: "1px solid rgba(71, 85, 105, 0.3)", textAlign: "center", fontSize: "14px", color: "#64748b" }}>
+        <footer
+          style={{
+            marginTop: "48px",
+            paddingTop: "32px",
+            borderTop: "1px solid rgba(71, 85, 105, 0.3)",
+            textAlign: "center",
+            fontSize: "14px",
+            color: "#64748b"
+          }}
+        >
           <p>Crypto Tax Info • South Africa 2026 • For educational purposes only</p>
         </footer>
       </div>

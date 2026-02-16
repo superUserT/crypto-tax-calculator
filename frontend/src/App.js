@@ -1,8 +1,9 @@
 import { useState } from "react";
-
 import { Calculator, Loader2, Sparkles, Info } from "lucide-react";
-
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 
 import TransactionUpload from "./components/TransactionUpload";
 import TransactionsTable from "./components/TransactionsTable";
@@ -24,7 +25,7 @@ function App() {
     setErrorMessage("");
 
     try {
-      const res = await fetch("http://localhost:8000/api/calculate", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/calculate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transactions }),
@@ -52,66 +53,173 @@ function App() {
     }
   };
 
-  // ✅ Correct Download Report (Matches FinalSummary Structure)
+
+  // ✅ Download Professional PDF Report
   const downloadReport = () => {
     if (processed.length === 0) return;
 
-    // ✅ CSV Headers
-    const headers = [
-      "Date",
-      "Type",
-      "Buy Coin",
-      "Sell Coin",
-      "Buy Amount",
-      "Sell Amount",
-      "Gain (R)",
-      "Cost Basis (R)",
-      "Proceeds (R)",
-    ];
+    const doc = new jsPDF("landscape");
 
-    // ✅ Rows from processedTransactions
-    const rows = processed.map((txObj) => {
-      const tx = txObj.transaction || {};
-      const disposal = txObj.disposal || {};
+    const format = (num) =>
+      Number(num || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 8,
+      });
 
-      return [
-        tx.date || "",
-        tx.type || "",
-        tx.buyCoin || "",
-        tx.sellCoin || "",
-        tx.buyAmount || "",
-        tx.sellAmount || "",
-        disposal.gain?.toFixed(2) || "0.00",
-        disposal.costBasis?.toFixed(2) || "0.00",
-        disposal.proceeds?.toFixed(2) || "0.00",
-      ];
+    // =============================
+    // TITLE
+    // =============================
+    doc.setFontSize(22);
+    doc.setTextColor(40, 40, 40);
+    doc.text("Crypto FIFO Tax Report", 14, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(120);
+    doc.text(
+      `Generated on: ${new Date().toLocaleDateString()}`,
+      14,
+      28
+    );
+
+    let y = 40;
+
+    // =============================
+    // FINAL SUMMARY CALCULATION
+    // =============================
+    const ANNUAL_EXCLUSION = 40000;
+
+    const capitalGains = {};
+    processed.forEach((txObj) => {
+      if (!txObj?.disposal) return;
+
+      const coin =
+        txObj.transaction?.sellCoin ||
+        txObj.transaction?.buyCoin ||
+        "Unknown";
+
+      if (!capitalGains[coin]) capitalGains[coin] = 0;
+      capitalGains[coin] += txObj.disposal.gain || 0;
     });
 
-    // ✅ Add Final Holdings Section
-    rows.push([]);
-    rows.push(["FINAL HOLDINGS"]);
-    rows.push(["Coin", "Amount"]);
+    const totalGain = Object.values(capitalGains).reduce(
+      (sum, g) => sum + g,
+      0
+    );
 
-    Object.entries(finalBalances).forEach(([coin, data]) => {
-      rows.push([coin, data.totalAmount]);
+    const taxableGain = Math.max(totalGain - ANNUAL_EXCLUSION, 0);
+
+    const getSACryptoTaxRate = (gain) => {
+      if (gain <= 237100) return 0.18;
+      if (gain <= 370500) return 0.26;
+      if (gain <= 512800) return 0.31;
+      if (gain <= 673000) return 0.36;
+      if (gain <= 857900) return 0.39;
+      if (gain <= 1817000) return 0.41;
+      return 0.45;
+    };
+
+    const marginalTaxRate = getSACryptoTaxRate(taxableGain);
+    const taxOwed = taxableGain * marginalTaxRate;
+
+    // =============================
+    // SUMMARY TABLE
+    // =============================
+    autoTable(doc, {
+      startY: y,
+      head: [["Summary", "Value"]],
+      body: [
+        ["Total Capital Gain", `R${format(totalGain)}`],
+        ["Annual Exclusion", `R${format(ANNUAL_EXCLUSION)}`],
+        ["Taxable Gain", `R${format(taxableGain)}`],
+        ["Tax Rate Applied", `${(marginalTaxRate * 100).toFixed(0)}%`],
+        ["Estimated Tax Owed", `R${format(taxOwed)}`],
+      ],
+      theme: "grid",
+      headStyles: { fillColor: [45, 212, 191] },
+      styles: { fontSize: 10 },
     });
 
-    // ✅ Build CSV
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers, ...rows].map((row) => row.join(",")).join("\n");
+    y = doc.lastAutoTable.finalY + 15;
 
-    // ✅ Trigger Download
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
+    // =============================
+    // CAPITAL GAINS PER COIN
+    // =============================
+    autoTable(doc, {
+      startY: y,
+      head: [["Coin", "Gain / Loss (R)"]],
+      body: Object.entries(capitalGains).map(([coin, gain]) => [
+        coin,
+        `${gain >= 0 ? "+" : ""}R${format(gain)}`,
+      ]),
+      theme: "striped",
+      headStyles: { fillColor: [167, 139, 250] },
+      styles: { fontSize: 10 },
+    });
 
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "crypto_fifo_full_report.csv");
+    y = doc.lastAutoTable.finalY + 15;
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // =============================
+    // FINAL HOLDINGS
+    // =============================
+    autoTable(doc, {
+      startY: y,
+      head: [["Coin", "Amount Held"]],
+      body: Object.entries(finalBalances).map(([coin, balance]) => [
+        coin,
+        format(balance.totalAmount),
+      ]),
+      theme: "striped",
+      headStyles: { fillColor: [34, 197, 94] },
+      styles: { fontSize: 10 },
+    });
+
+    // =============================
+    // NEW PAGE — TRANSACTIONS TABLE
+    // =============================
+    doc.addPage();
+
+    doc.setFontSize(18);
+    doc.text("Transaction Details (FIFO)", 14, 20);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [[
+        "Date",
+        "Type",
+        "Sell Coin",
+        "Sell Amount",
+        "Buy Coin",
+        "Buy Amount",
+        "Cost (R)",
+        "Proceeds (R)",
+        "Gain/Loss (R)"
+      ]],
+      body: processed.map((txObj) => {
+        const tx = txObj.transaction || {};
+        const disposal = txObj.disposal || {};
+
+        return [
+          tx.date || "",
+          tx.type || "",
+          tx.sellCoin || "",
+          tx.sellAmount ? format(tx.sellAmount) : "",
+          tx.buyCoin || "",
+          tx.buyAmount ? format(tx.buyAmount) : "",
+          disposal.cost ? `R${format(disposal.cost)}` : "",
+          disposal.proceeds ? `R${format(disposal.proceeds)}` : "",
+          disposal.gain !== undefined
+            ? `${disposal.gain >= 0 ? "+" : ""}R${format(disposal.gain)}`
+            : "",
+        ];
+      }),
+      theme: "grid",
+      headStyles: { fillColor: [59, 130, 246] },
+      styles: { fontSize: 8 },
+    });
+
+    doc.save("crypto_fifo_tax_report.pdf");
   };
+
 
   const downloadTemplate = () => {
     const headers = [
@@ -206,17 +314,41 @@ function App() {
 
                   {/* Upload Section */}
                   <section>
-                    <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "24px",
+                        flexWrap: "wrap",
+                        marginBottom: "50px",
+                        textAlign: "center",
+                      }}
+                    >
                       <button
                         onClick={downloadTemplate}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-4px)";
+                          e.currentTarget.style.boxShadow =
+                            "0 8px 20px rgba(96,165,250,0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "none";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 12px rgba(0,0,0,0.1)";
+                        }}
                         style={{
-                          background: "none",
+                          backgroundColor: "#60a5fa",
+                          color: "white",
+                          padding: "16px 36px",
+                          fontSize: "18px",
+                          fontWeight: 600,
+                          borderRadius: "10px",
                           border: "none",
-                          ...styles.subtitle,
-                          color: "#60a5fa",
                           cursor: "pointer",
-                          marginBottom: "50px",
-                          marginRight: "50px"
+                          transition: "all 0.25s ease",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          minWidth: "220px",
                         }}
                       >
                         Download CSV Template
@@ -226,17 +358,32 @@ function App() {
                         href="https://www.taxtim.com"
                         target="_blank"
                         rel="noopener noreferrer"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-4px)";
+                          e.currentTarget.style.boxShadow =
+                            "0 8px 20px rgba(52,211,153,0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "none";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 12px rgba(0,0,0,0.1)";
+                        }}
                         style={{
-                          ...styles.subtitle,
-                          color: "#34d399",
+                          backgroundColor: "#34d399",
+                          color: "white",
+                          padding: "16px 36px",
+                          fontSize: "18px",
                           fontWeight: 600,
+                          borderRadius: "10px",
                           textDecoration: "none",
-                          marginBottom: "50px"
+                          display: "inline-block",
+                          transition: "all 0.25s ease",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          minWidth: "220px",
                         }}
                       >
                         Visit TaxTim
                       </a>
-                      <br />
                     </div>
 
 
