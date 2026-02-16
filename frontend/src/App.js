@@ -12,6 +12,8 @@ import CryptoTaxInfo from "./components/CryptoTaxInfo";
 
 import { styles } from "./styles/style";
 
+const URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [processed, setProcessed] = useState([]);
@@ -25,7 +27,7 @@ function App() {
     setErrorMessage("");
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/calculate`, {
+      const res = await fetch(`${URL}/api/calculate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transactions }),
@@ -522,4 +524,3 @@ function App() {
 }
 
 export default App;
-
